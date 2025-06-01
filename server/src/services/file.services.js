@@ -1,5 +1,4 @@
 import File from '../models/file.js'
-import axios from 'axios'
 import { client, agent } from '../axiosAgent.js'
 
 import pLimit from 'p-limit'
@@ -9,6 +8,8 @@ import getProductData from '../utils/getProductData.js'
 import getFormatedDate from '../utils/getFormatedDate.js'
 
 import { parse } from 'node-html-parser'
+
+import ApiError from '../utils/ApiError.js'
 
 export const getAllProductsURL = async url => {
   try {
@@ -43,7 +44,7 @@ export const getAllProductsURL = async url => {
     }
     return Array.from(productLinks)
   } catch (error) {
-    throw new Error(`Error scraping ${url}`)
+    throw new ApiError(`Error getting ${url}`)
   }
 }
 
@@ -66,11 +67,11 @@ export const scrapeAllProducts = async (urls, url) => {
     const tasks = urls.map(url =>
       limit(() => scrapeProduct(cleanUrl.origin + url, penRate))
     )
-    const results = await Promise.all(tasks)
+    const results = await Promise.allSettled(tasks)
 
     return results.filter(Boolean)
   } catch (error) {
-    throw new Error(`Error scraping all products`)
+    throw new ApiError(500, `Error scraping all products`)
   } finally {
     agent.http.destroy()
     agent.https.destroy()
@@ -82,17 +83,17 @@ export const saveFile = async data => {
     const date = getFormatedDate()
     const filename = `${date}.csv`
     const file = data.map(product => ({
-      Handle: product.productHandle,
-      Title: product.productTitle,
-      Vendor: product.productBrand,
-      SKU: product.productSku,
-      PricePen: parseFloat(product.productPricePen),
-      PriceUsd: parseFloat(product.productPriceUsd),
-      Image: product.productImage,
-      Body: product.productDescription,
-      Tags: product.productTags,
-      Type: product.productCategory,
-      Published: product.productStock
+      Handle: product.value.productHandle,
+      Title: product.value.productTitle,
+      Vendor: product.value.productBrand,
+      SKU: product.value.productSku,
+      PricePen: parseFloat(product.value.productPricePen),
+      PriceUsd: parseFloat(product.value.productPriceUsd),
+      Image: product.value.productImage,
+      Body: product.value.productDescription,
+      Tags: product.value.productTags,
+      Type: product.value.productCategory,
+      Published: product.value.productStock
     }))
     const newFile = new File({
       filename,
@@ -101,6 +102,6 @@ export const saveFile = async data => {
     const savedFile = await newFile.save()
     return savedFile
   } catch (error) {
-    throw new Error(`Error saving file ${filename}`)
+    throw new ApiError(500, `Error saving file ${filename}`)
   }
 }

@@ -22,8 +22,7 @@ app.use(helmet())
 app.use(express.urlencoded({ extended: true }))
 
 app.use('/api/v1', authRouter)
-app.use(verifyToken)
-app.use('/api/v1', fileRouter)
+app.use('/api/v1', verifyToken, fileRouter)
 app.use(errorHandler)
 
 export default app
