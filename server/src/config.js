@@ -6,23 +6,24 @@ import authRouter from './router/auth.router.js'
 import fileRouter from './router/files.router.js'
 import verifyToken from './middlewares/verifyToken.js'
 import cookieParser from 'cookie-parser'
+import { errorHandler } from './middlewares/errorHandler.js'
 
 const app = express()
 
-import "dotenv/config"
+import 'dotenv/config'
 import './db.js'
 
 app.set('PORT', process.env.PORT || 3000)
 
 app.use(cookieParser())
 app.use(express.json())
-app.use(cors({origin: 'http://localhost:5173', credentials: true}))
+app.use(cors({ origin: process.env.CLIENT, credentials: true }))
 app.use(helmet())
 app.use(express.urlencoded({ extended: true }))
 
-
 app.use('/api/v1', authRouter)
-app.use('/api/v1', fileRouter)
 app.use(verifyToken)
+app.use('/api/v1', fileRouter)
+app.use(errorHandler)
 
 export default app

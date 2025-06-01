@@ -17,7 +17,7 @@ export const useGetFiles = () => {
       const newFiles = response.data
 
       setFiles(prevFiles => {
-        const existingIds = new Set(prevFiles.map(f => f._id)) // o filename
+        const existingIds = new Set(prevFiles.map(f => f._id))
         const filtered = newFiles.filter(f => !existingIds.has(f._id))
         return [...prevFiles, ...filtered]
       })

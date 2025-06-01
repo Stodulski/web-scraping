@@ -33,10 +33,11 @@ export const useLogin = () => {
         username,
         password
       })
-      setLoggedIn(response.data.loggedIn)
+      setLoggedIn(true)
       navigate('/')
       toast.success('Login successful.', { id: toastId, duration: 2000 })
     } catch (err) {
+      setLoggedIn(false)
       toast.error(err.response ? err.response?.data?.error : 'Server error.', {
         id: toastId,
         duration: 2000

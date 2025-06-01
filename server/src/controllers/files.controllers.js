@@ -6,7 +6,7 @@ import {
 } from '../services/file.services.js'
 import getFormatedFile from '../utils/getFormatedFile.js'
 
-export const generateFile = async (req, res) => {
+export const generateFile = async (req, res, next) => {
   try {
     const { url } = req.body
     const urls = await getAllProductsURL(url)
@@ -17,35 +17,44 @@ export const generateFile = async (req, res) => {
       filename: savedFile.filename,
       _id: savedFile._id
     })
-  } catch (err) {
-    console.log(err)
-    res.status(500).json({
-      message: err.message || 'Error generating CSV file'
-    })
+  } catch (error) {
+    next(err)
   }
 }
 
-export const downloadFile = async (req, res) => {
-  const id = req.params.id
-  const response = await File.findById(id)
-  const file = getFormatedFile(response.content)
-  res.setHeader('Content-Type', 'text/csv')
-  res.status(200).send(file)
+export const downloadFile = async (req, res, next) => {
+  try {
+    const id = req.params.id
+    const response = await File.findById(id)
+    const file = getFormatedFile(response.content)
+    res.setHeader('Content-Type', 'text/csv')
+    res.status(200).send(file)
+  } catch (error) {
+    next(error)
+  }
 }
 
-export const getAllFiles = async (req, res) => {
+export const getAllFiles = async (req, res, next) => {
   const page = parseInt(req.query.page) || 1
   const limit = parseInt(req.query.limit) || 20
-  const files = await File.find().select('-content').sort({ createdAt: 1 }).skip((page - 1) * limit).limit(limit)
-  res.status(200).json(files)
+  try {
+    const files = await File.find()
+      .select('-content')
+      .sort({ createdAt: 1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+    res.status(200).json(files)
+  } catch (error) {
+    next(error)
+  }
 }
 
-export const deleteFile = async (req, res) => {
+export const deleteFile = async (req, res, next) => {
   try {
     const id = req.params.id
     const deletedFile = await File.findByIdAndDelete(id).select('-content')
     res.status(200).json({ _id: deletedFile._id })
   } catch (error) {
-    res.status(404).json({ error: 'Error deleting file' })
+    next(error)
   }
 }

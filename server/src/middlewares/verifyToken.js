@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 
 const verifyToken = (req, res, next) => {
-  const bearerToken = req.cookies.token
+  const bearerToken = req.cookies.access_Token
   if (!bearerToken) {
     return res.status(401).json({ text: 'Unauthorized' })
   }

@@ -24,7 +24,10 @@ export const useCreateFile = (files, setFiles) => {
         duration: 1000
       })
     } catch (error) {
-      toast.error('Error creating CSV file', { id: toastId, duration: 1000 })
+      toast.error(error.response ? error.response.data.error : 'Server error', {
+        id: toastId,
+        duration: 2000
+      })
       setUrl(null)
     }
   }
